@@ -1,0 +1,45 @@
+import discord
+from discord.ext import commands
+import re
+
+# Initialize the bot with a command prefix
+bot = commands.Bot(command_prefix='!')
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name}')
+
+@bot.command(name='deobfuscation')
+async def deobfuscate(ctx, *, code):
+    """
+    A command to deobfuscate simple code by removing excess whitespace, comments,
+    and simplifying variable names.
+    
+    Usage: !deobfuscation <code>
+    Example: !deobfuscation def   x_y_z(  a  ): # comment \n    return a*2
+    """
+    try:
+        # Remove single-line comments
+        code = re.sub(r'#.*$', '', code, flags=re.MULTILINE)
+        
+        # Remove multi-line comments
+        code = re.sub(r'"""[\s\S]*?"""', '', code)
+        code = re.sub(r"'''[\s\S]*?'''", '', code)
+        
+        # Normalize whitespace (replace multiple spaces/tabs with single space)
+        code = re.sub(r'\s+', ' ', code)
+        
+        # Remove leading/trailing whitespace
+        code = code.strip()
+        
+        # Simple variable name normalization (example: replace x_y_z with func)
+        code = re.sub(r'\b[a-zA-Z0-9_]+_[a-zA-Z0-9_]+\b', 'func', code)
+        
+        # Send the deobfuscated code back to the channel
+        await ctx.send(f'**Deobfuscated Code:**\n```python\n{code}\n```')
+        
+    except Exception as e:
+        await ctx.send(f'Error deobfuscating code: {str(e)}')
+
+# Replace 'YOUR_TOKEN' with your bot's token
+bot.run('MTQxNTA2MDMwMDQ5ODk5MzIyNA.GPUMbJ.4T6Qv2NvXLpF39TNw4NUnkFT4w37iuSgBnarnc')
